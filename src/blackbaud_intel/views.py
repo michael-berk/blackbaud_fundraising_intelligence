@@ -6,6 +6,10 @@ resolved by the federation connection, so no credentials appear here.
 
 Views are defined as Python so they are importable, lintable and shipped in the
 whl (see the project README for why config lives in Python, not YAML).
+
+Each ``_<domain>_views`` function returns the CREATE VIEW statements for one
+concern. ``build_view_statements`` concatenates them in dependency order:
+``opp_enriched`` underpins the pipeline views, which the exec rollup reads last.
 """
 
 STAGE_WEIGHTS = {
@@ -17,6 +21,9 @@ STAGE_WEIGHTS = {
     "Canceled": 0.00,
 }
 
+# An opportunity is "open" (still in play) when its win probability is neither 0 nor 1.
+OPEN_OPP = "win_probability BETWEEN 0.01 AND 0.99"
+
 
 def _gold_namespace(gold_catalog: str, gold_schema: str) -> str:
     return f"{gold_catalog}.{gold_schema}"
@@ -26,17 +33,8 @@ def _stage_weight_values() -> str:
     return ",\n  ".join(f"('{stage}', {weight})" for stage, weight in STAGE_WEIGHTS.items())
 
 
-def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: str) -> list[str]:
-    """Return the ordered CREATE VIEW statements for the demo.
-
-    Args:
-        source_catalog: Federated foreign catalog mirroring the Blackbaud database.
-        gold_catalog: Unity Catalog catalog that will hold the gold views.
-        gold_schema: Schema within ``gold_catalog`` for the views.
-    """
-    src = source_catalog
-    gold = _gold_namespace(gold_catalog, gold_schema)
-
+def _base_views(src: str, gold: str) -> list[str]:
+    """Stage-weight seed and the enriched opportunity grain every other view reads."""
     return [
         f"""
         CREATE OR REPLACE VIEW {gold}.stage_weight AS
@@ -65,14 +63,19 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         LEFT JOIN {src}.dbo.CONSTITUENT fc ON pp.PRIMARYMANAGERFUNDRAISERID = fc.ID
         LEFT JOIN {gold}.stage_weight    w ON o.STATUS = w.status
         """,
+    ]
+
+
+def _pipeline_views(gold: str) -> list[str]:
+    """Pipeline forecast, stage breakdown, concentration risk and fundraiser portfolios."""
+    return [
         f"""
         CREATE OR REPLACE VIEW {gold}.pipeline_forecast AS
         SELECT
           COUNT(*)                                                        AS n_opportunities,
           ROUND(SUM(ask_amount), 0)                                       AS total_ask,
           ROUND(SUM(weighted_amount), 0)                                  AS weighted_forecast,
-          ROUND(SUM(CASE WHEN win_probability BETWEEN 0.01 AND 0.99
-                         THEN ask_amount END), 0)                         AS open_pipeline,
+          ROUND(SUM(CASE WHEN {OPEN_OPP} THEN ask_amount END), 0)         AS open_pipeline,
           ROUND(SUM(CASE WHEN stage = 'Accepted' THEN ask_amount END), 0) AS committed
         FROM {gold}.opp_enriched
         """,
@@ -89,7 +92,7 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         f"""
         CREATE OR REPLACE VIEW {gold}.pipeline_risk AS
         WITH open_opps AS (
-          SELECT * FROM {gold}.opp_enriched WHERE win_probability BETWEEN 0.01 AND 0.99
+          SELECT * FROM {gold}.opp_enriched WHERE {OPEN_OPP}
         ),
         ranked AS (
           SELECT ask_amount,
@@ -117,6 +120,12 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         GROUP BY fundraiser_name
         ORDER BY weighted_forecast DESC
         """,
+    ]
+
+
+def _attainment_views(src: str, gold: str) -> list[str]:
+    """Goal-vs-raised attainment by designation and campaign goal amounts."""
+    return [
         f"""
         CREATE OR REPLACE VIEW {gold}.designation_attainment AS
         WITH goal AS (
@@ -155,6 +164,12 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         GROUP BY c.NAME, c.STARTDATE, c.ENDDATE
         ORDER BY goal_amount DESC NULLS LAST
         """,
+    ]
+
+
+def _executive_views(gold: str) -> list[str]:
+    """Single-row exec rollup and the five what-if scenarios; read the views above."""
+    return [
         f"""
         CREATE OR REPLACE VIEW {gold}.exec_summary AS
         WITH g AS (
@@ -178,33 +193,38 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         """,
         f"""
         CREATE OR REPLACE VIEW {gold}.scenario_forecast AS
-        WITH b AS (SELECT * FROM {gold}.opp_enriched)
         SELECT 'Current trajectory' AS scenario, 1 AS sort_order,
                ROUND(SUM(weighted_amount), 0) AS forecast
-        FROM b
+        FROM {gold}.opp_enriched
         UNION ALL
         SELECT 'Improved conversion (+15pts)', 2,
-               ROUND(SUM(CASE WHEN win_probability BETWEEN 0.01 AND 0.99
+               ROUND(SUM(CASE WHEN {OPEN_OPP}
                               THEN ask_amount * LEAST(win_probability + 0.15, 1.0)
                               ELSE weighted_amount END), 0)
-        FROM b
+        FROM {gold}.opp_enriched
         UNION ALL
         SELECT 'More pipeline (+20% open)', 3,
-               ROUND(SUM(CASE WHEN win_probability BETWEEN 0.01 AND 0.99
+               ROUND(SUM(CASE WHEN {OPEN_OPP}
                               THEN weighted_amount * 1.20 ELSE weighted_amount END), 0)
-        FROM b
+        FROM {gold}.opp_enriched
         UNION ALL
         SELECT 'Major donor delays (-25% qualified)', 4,
                ROUND(SUM(CASE WHEN stage = 'Qualified'
                               THEN weighted_amount * 0.75 ELSE weighted_amount END), 0)
-        FROM b
+        FROM {gold}.opp_enriched
         UNION ALL
         SELECT 'Campaign extension (recover 10% lapsed)', 5,
                ROUND(SUM(CASE WHEN stage IN ('Rejected', 'Unqualified')
                               THEN ask_amount * 0.10 ELSE weighted_amount END), 0)
-        FROM b
+        FROM {gold}.opp_enriched
         ORDER BY sort_order
         """,
+    ]
+
+
+def _prospect_views(src: str, gold: str) -> list[str]:
+    """RFM prospect scoring with a next-best-ask suggestion (decision-science method #2)."""
+    return [
         f"""
         CREATE OR REPLACE VIEW {gold}.prospect_next_best_ask AS
         WITH rfm AS (
@@ -241,15 +261,33 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
     ]
 
 
+def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: str) -> list[str]:
+    """Return the CREATE VIEW statements for the demo, in dependency order.
+
+    Args:
+        source_catalog: Federated foreign catalog mirroring the Blackbaud database.
+        gold_catalog: Unity Catalog catalog that will hold the gold views.
+        gold_schema: Schema within ``gold_catalog`` for the views.
+    """
+    src = source_catalog
+    gold = _gold_namespace(gold_catalog, gold_schema)
+    return [
+        *_base_views(src, gold),
+        *_pipeline_views(gold),
+        *_attainment_views(src, gold),
+        *_executive_views(gold),
+        *_prospect_views(src, gold),
+    ]
+
+
 def build_scenario_statement(
     gold_catalog: str, gold_schema: str, response_pending_uplift: float
 ) -> str:
-    """Return the executive what-if scenario query (Output 5).
+    """Return an interactive what-if query for a caller-supplied conversion uplift.
 
-    Recomputes the weighted forecast after raising the win probability of
-    ``Response pending`` opportunities by ``response_pending_uplift`` (capped at 1.0),
-    holding all other stages fixed. Returned as a query, not a view, because the
-    uplift is a caller-supplied parameter rather than stored state.
+    The ``scenario_forecast`` view materialises five fixed scenarios for the
+    dashboard; this returns a single query parameterised by ``response_pending_uplift``
+    so a notebook widget can explore arbitrary uplift values live.
 
     Args:
         gold_catalog: Catalog holding the gold views.
