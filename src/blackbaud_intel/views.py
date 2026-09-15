@@ -155,6 +155,56 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         GROUP BY c.NAME, c.STARTDATE, c.ENDDATE
         ORDER BY goal_amount DESC NULLS LAST
         """,
+        f"""
+        CREATE OR REPLACE VIEW {gold}.exec_summary AS
+        WITH g AS (
+          SELECT SUM(goal_amount) AS total_goal, SUM(raised_amount) AS total_raised
+          FROM {gold}.designation_attainment
+        ),
+        p AS (
+          SELECT weighted_forecast, open_pipeline, committed
+          FROM {gold}.pipeline_forecast
+        )
+        SELECT
+          ROUND(g.total_goal, 0)                                          AS goal,
+          ROUND(g.total_raised, 0)                                        AS raised,
+          ROUND(g.total_goal - g.total_raised, 0)                         AS remaining,
+          p.open_pipeline                                                 AS open_pipeline,
+          ROUND(g.total_raised + p.weighted_forecast, 0)                  AS forecasted_total,
+          ROUND(g.total_raised + p.weighted_forecast - g.total_goal, 0)   AS gap,
+          ROUND(LEAST((g.total_raised + p.weighted_forecast)
+                      / NULLIF(g.total_goal, 0), 1.0), 3)                 AS probability_of_goal
+        FROM g CROSS JOIN p
+        """,
+        f"""
+        CREATE OR REPLACE VIEW {gold}.scenario_forecast AS
+        WITH b AS (SELECT * FROM {gold}.opp_enriched)
+        SELECT 'Current trajectory' AS scenario, 1 AS sort_order,
+               ROUND(SUM(weighted_amount), 0) AS forecast
+        FROM b
+        UNION ALL
+        SELECT 'Improved conversion (+15pts)', 2,
+               ROUND(SUM(CASE WHEN win_probability BETWEEN 0.01 AND 0.99
+                              THEN ask_amount * LEAST(win_probability + 0.15, 1.0)
+                              ELSE weighted_amount END), 0)
+        FROM b
+        UNION ALL
+        SELECT 'More pipeline (+20% open)', 3,
+               ROUND(SUM(CASE WHEN win_probability BETWEEN 0.01 AND 0.99
+                              THEN weighted_amount * 1.20 ELSE weighted_amount END), 0)
+        FROM b
+        UNION ALL
+        SELECT 'Major donor delays (-25% qualified)', 4,
+               ROUND(SUM(CASE WHEN stage = 'Qualified'
+                              THEN weighted_amount * 0.75 ELSE weighted_amount END), 0)
+        FROM b
+        UNION ALL
+        SELECT 'Campaign extension (recover 10% lapsed)', 5,
+               ROUND(SUM(CASE WHEN stage IN ('Rejected', 'Unqualified')
+                              THEN ask_amount * 0.10 ELSE weighted_amount END), 0)
+        FROM b
+        ORDER BY sort_order
+        """,
     ]
 
 

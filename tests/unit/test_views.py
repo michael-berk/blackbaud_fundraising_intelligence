@@ -19,6 +19,8 @@ EXPECTED_VIEWS = [
     "fundraiser_portfolio",
     "designation_attainment",
     "campaign_goals",
+    "exec_summary",
+    "scenario_forecast",
 ]
 
 

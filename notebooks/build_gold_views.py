@@ -41,6 +41,14 @@ display(spark.table(f"{gold_catalog}.{gold_schema}.campaign_goals"))
 
 # COMMAND ----------
 
+display(spark.table(f"{gold_catalog}.{gold_schema}.exec_summary"))
+
+# COMMAND ----------
+
+display(spark.table(f"{gold_catalog}.{gold_schema}.scenario_forecast"))
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Executive what-if scenario (Output 5)
 # MAGIC Raise the conversion of `Response pending` opportunities and see the forecast move.
