@@ -37,6 +37,19 @@ def test_each_view_is_created(statements, view_name):
     assert any(f"CREATE OR REPLACE VIEW {fqn} AS" in s for s in statements)
 
 
+def test_designation_goal_uses_max_not_sum(statements):
+    # A designation can have several nested goal levels; summing double-counts,
+    # so the top-level goal must be taken as MAX(GOAL).
+    attainment_sql = next(s for s in statements if "designation_attainment AS" in s)
+    assert "MAX(GOAL)" in attainment_sql
+    assert "SUM(GOAL)" not in attainment_sql
+
+
+def test_pipeline_risk_guards_zero_open_pipeline(statements):
+    risk_sql = next(s for s in statements if "pipeline_risk AS" in s)
+    assert "NULLIF(MAX(total_open), 0)" in risk_sql
+
+
 def test_source_catalog_is_interpolated(statements):
     joined = "\n".join(statements)
     assert f"{SOURCE}.dbo.OPPORTUNITY" in joined

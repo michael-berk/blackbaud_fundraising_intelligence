@@ -18,9 +18,12 @@ STAGE_WEIGHTS = {
 }
 
 
+def _gold_namespace(gold_catalog: str, gold_schema: str) -> str:
+    return f"{gold_catalog}.{gold_schema}"
+
+
 def _stage_weight_values() -> str:
-    rows = ",\n  ".join(f"('{stage}', {weight})" for stage, weight in STAGE_WEIGHTS.items())
-    return rows
+    return ",\n  ".join(f"('{stage}', {weight})" for stage, weight in STAGE_WEIGHTS.items())
 
 
 def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: str) -> list[str]:
@@ -32,7 +35,7 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         gold_schema: Schema within ``gold_catalog`` for the views.
     """
     src = source_catalog
-    gold = f"{gold_catalog}.{gold_schema}"
+    gold = _gold_namespace(gold_catalog, gold_schema)
 
     return [
         f"""
@@ -95,7 +98,7 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
           FROM open_opps
         )
         SELECT
-          ROUND(SUM(CASE WHEN rnk <= 10 THEN ask_amount END) / MAX(total_open) * 100, 1)
+          ROUND(SUM(CASE WHEN rnk <= 10 THEN ask_amount END) / NULLIF(MAX(total_open), 0) * 100, 1)
                                                               AS top10_pct_of_open,
           (SELECT COUNT(*) FROM open_opps WHERE expected_ask_date IS NULL)
                                                               AS open_opps_missing_ask_date,
@@ -117,7 +120,9 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         f"""
         CREATE OR REPLACE VIEW {gold}.designation_attainment AS
         WITH goal AS (
-          SELECT DESIGNATIONID, SUM(GOAL) AS goal_amount
+          -- A designation can have several nested goal levels (DESIGNATIONLEVELGOALID);
+          -- the top-level goal is the max, not the sum, which would double-count.
+          SELECT DESIGNATIONID, MAX(GOAL) AS goal_amount
           FROM {src}.dbo.DESIGNATIONGOAL
           GROUP BY DESIGNATIONID
         ),
@@ -168,7 +173,7 @@ def build_scenario_statement(
         gold_schema: Schema holding the gold views.
         response_pending_uplift: Absolute uplift to win probability (e.g. 0.10 = +10pts).
     """
-    gold = f"{gold_catalog}.{gold_schema}"
+    gold = _gold_namespace(gold_catalog, gold_schema)
     return f"""
     SELECT
       ROUND(SUM(weighted_amount), 0)                                       AS base_forecast,
