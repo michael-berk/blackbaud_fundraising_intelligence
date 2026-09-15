@@ -1,0 +1,996 @@
+{
+  "datasets": [
+    {
+      "name": "exec_ds",
+      "displayName": "Executive summary",
+      "queryLines": [
+        "SELECT * FROM blackbaud_demo_bbcon.default.exec_summary"
+      ]
+    },
+    {
+      "name": "scenario_ds",
+      "displayName": "What-if scenarios",
+      "queryLines": [
+        "SELECT scenario, sort_order, forecast FROM blackbaud_demo_bbcon.default.scenario_forecast ORDER BY sort_order"
+      ]
+    },
+    {
+      "name": "stage_ds",
+      "displayName": "Pipeline by stage",
+      "queryLines": [
+        "SELECT stage, weighted FROM blackbaud_demo_bbcon.default.pipeline_by_stage"
+      ]
+    },
+    {
+      "name": "designation_ds",
+      "displayName": "Designation attainment",
+      "queryLines": [
+        "SELECT designation_name, goal_amount, raised_amount, pct_to_goal FROM blackbaud_demo_bbcon.default.designation_attainment ORDER BY raised_amount DESC LIMIT 15"
+      ]
+    },
+    {
+      "name": "mc_ds",
+      "displayName": "Monte Carlo forecast",
+      "queryLines": [
+        "SELECT committed, p10, p50, p90, mean, probability_of_goal FROM blackbaud_demo_bbcon.default.montecarlo_forecast"
+      ]
+    },
+    {
+      "name": "mc_band_ds",
+      "displayName": "Forecast band",
+      "queryLines": [
+        "SELECT 'P10 (pessimistic)' AS scenario, 1 AS sort_order, p10 AS forecast FROM blackbaud_demo_bbcon.default.montecarlo_forecast UNION ALL SELECT 'P50 (expected)', 2, p50 FROM blackbaud_demo_bbcon.default.montecarlo_forecast UNION ALL SELECT 'P90 (optimistic)', 3, p90 FROM blackbaud_demo_bbcon.default.montecarlo_forecast ORDER BY sort_order"
+      ]
+    },
+    {
+      "name": "nba_ds",
+      "displayName": "Next best ask",
+      "queryLines": [
+        "SELECT prospect_name, recency_days, frequency, lifetime_giving, rfm_score, suggested_ask FROM blackbaud_demo_bbcon.default.prospect_next_best_ask WHERE lifetime_giving > 0 LIMIT 25"
+      ]
+    },
+    {
+      "name": "action_opps_ds",
+      "displayName": "Priority open opportunities",
+      "queryLines": [
+        "SELECT stage, ROUND(ask_amount,0) AS ask_amount, ROUND(weighted_amount,0) AS weighted_amount FROM blackbaud_demo_bbcon.default.opp_enriched WHERE win_probability>0 AND win_probability<1 ORDER BY ask_amount DESC LIMIT 15"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "main_page",
+      "displayName": "Campaign Executive View",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Campaign Executive Dashboard \u2014 Blackbaud CRM + Databricks"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "subtitle",
+            "multilineTextboxSpec": {
+              "lines": [
+                "Are we on track to achieve our campaign goal? Goal, raised, forecast, gap, probability, and executive what-if scenarios."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-goal",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "exec_ds",
+                  "fields": [
+                    {
+                      "name": "goal",
+                      "expression": "`goal`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "goal",
+                  "displayName": "Campaign Goal"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Campaign Goal"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-raised",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "exec_ds",
+                  "fields": [
+                    {
+                      "name": "raised",
+                      "expression": "`raised`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "raised",
+                  "displayName": "Raised to Date"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Raised to Date"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-forecast",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "exec_ds",
+                  "fields": [
+                    {
+                      "name": "forecasted_total",
+                      "expression": "`forecasted_total`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "forecasted_total",
+                  "displayName": "Forecasted Total"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Forecasted Total"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-open",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "exec_ds",
+                  "fields": [
+                    {
+                      "name": "open_pipeline",
+                      "expression": "`open_pipeline`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "open_pipeline",
+                  "displayName": "Open Pipeline"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Open Pipeline"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-gap",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "exec_ds",
+                  "fields": [
+                    {
+                      "name": "gap",
+                      "expression": "`gap`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "gap",
+                  "displayName": "Forecast Gap"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Forecast Gap"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-prob",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "exec_ds",
+                  "fields": [
+                    {
+                      "name": "probability_of_goal",
+                      "expression": "`probability_of_goal`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "probability_of_goal",
+                  "displayName": "Probability of Goal"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Probability of Goal"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "sec-scenarios",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Executive What-If Scenarios"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "scenario-bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "scenario_ds",
+                  "fields": [
+                    {
+                      "name": "scenario",
+                      "expression": "`scenario`"
+                    },
+                    {
+                      "name": "sum(forecast)",
+                      "expression": "SUM(`forecast`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "scenario",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  },
+                  "displayName": "scenario"
+                },
+                "y": {
+                  "fieldName": "sum(forecast)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "forecast"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Forecast under each scenario"
+              },
+              "mark": {
+                "colors": [
+                  "#FF3621",
+                  "#00A972",
+                  "#FFAB00",
+                  "#8BCAE7",
+                  "#AB4057"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "stage-bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stage_ds",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "expression": "`stage`"
+                    },
+                    {
+                      "name": "sum(weighted)",
+                      "expression": "SUM(`weighted`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "stage",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "stage"
+                },
+                "y": {
+                  "fieldName": "sum(weighted)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "weighted"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Weighted pipeline by stage"
+              },
+              "mark": {
+                "colors": [
+                  "#FF3621",
+                  "#00A972",
+                  "#FFAB00",
+                  "#8BCAE7",
+                  "#AB4057"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 9,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "sec-desig",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Goal vs. Raised by Designation"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "desig-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "designation_ds",
+                  "fields": [
+                    {
+                      "name": "designation_name",
+                      "expression": "`designation_name`"
+                    },
+                    {
+                      "name": "goal_amount",
+                      "expression": "`goal_amount`"
+                    },
+                    {
+                      "name": "raised_amount",
+                      "expression": "`raised_amount`"
+                    },
+                    {
+                      "name": "pct_to_goal",
+                      "expression": "`pct_to_goal`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "designation_name",
+                    "displayName": "Designation"
+                  },
+                  {
+                    "fieldName": "goal_amount",
+                    "displayName": "Goal ($)"
+                  },
+                  {
+                    "fieldName": "raised_amount",
+                    "displayName": "Raised ($)"
+                  },
+                  {
+                    "fieldName": "pct_to_goal",
+                    "displayName": "% to Goal"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Designation attainment (top 15 by raised)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    },
+    {
+      "name": "insights_page",
+      "displayName": "Actionable Insights",
+      "layout": [
+        {
+          "widget": {
+            "name": "i-title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Actionable Insights \u2014 What To Do Next"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "i-sub",
+            "multilineTextboxSpec": {
+              "lines": [
+                "Decision science over Blackbaud CRM: where the forecast lands, and the specific prospects and opportunities to act on."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "i-sec-forecast",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Forecast confidence (Monte Carlo, 10k simulations)"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "mc-p10",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "mc_ds",
+                  "fields": [
+                    {
+                      "name": "p10",
+                      "expression": "`p10`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "p10",
+                  "displayName": "Pessimistic (P10)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Pessimistic (P10)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "mc-p50",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "mc_ds",
+                  "fields": [
+                    {
+                      "name": "p50",
+                      "expression": "`p50`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "p50",
+                  "displayName": "Expected (P50)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Expected (P50)"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 3,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "mc-p90",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "mc_ds",
+                  "fields": [
+                    {
+                      "name": "p90",
+                      "expression": "`p90`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "p90",
+                  "displayName": "Optimistic (P90)"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Optimistic (P90)"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "mc-band",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "mc_band_ds",
+                  "fields": [
+                    {
+                      "name": "scenario",
+                      "expression": "`scenario`"
+                    },
+                    {
+                      "name": "sum(forecast)",
+                      "expression": "SUM(`forecast`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "scenario",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  },
+                  "displayName": "scenario"
+                },
+                "y": {
+                  "fieldName": "sum(forecast)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "forecast"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Forecast range"
+              },
+              "mark": {
+                "colors": [
+                  "#FF3621",
+                  "#FFAB00",
+                  "#00A972"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "i-sec-prospects",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Prospects to solicit next (RFM-ranked, with suggested ask)"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "nba-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "nba_ds",
+                  "fields": [
+                    {
+                      "name": "prospect_name",
+                      "expression": "`prospect_name`"
+                    },
+                    {
+                      "name": "lifetime_giving",
+                      "expression": "`lifetime_giving`"
+                    },
+                    {
+                      "name": "frequency",
+                      "expression": "`frequency`"
+                    },
+                    {
+                      "name": "recency_days",
+                      "expression": "`recency_days`"
+                    },
+                    {
+                      "name": "rfm_score",
+                      "expression": "`rfm_score`"
+                    },
+                    {
+                      "name": "suggested_ask",
+                      "expression": "`suggested_ask`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "prospect_name",
+                    "displayName": "Prospect"
+                  },
+                  {
+                    "fieldName": "lifetime_giving",
+                    "displayName": "Lifetime Giving ($)"
+                  },
+                  {
+                    "fieldName": "frequency",
+                    "displayName": "# Gifts"
+                  },
+                  {
+                    "fieldName": "recency_days",
+                    "displayName": "Days Since Last Gift"
+                  },
+                  {
+                    "fieldName": "rfm_score",
+                    "displayName": "RFM Score"
+                  },
+                  {
+                    "fieldName": "suggested_ask",
+                    "displayName": "Suggested Ask ($)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Top 25 prospects to contact"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "i-sec-opps",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Largest open opportunities to prioritize"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "opps-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "action_opps_ds",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "expression": "`stage`"
+                    },
+                    {
+                      "name": "ask_amount",
+                      "expression": "`ask_amount`"
+                    },
+                    {
+                      "name": "weighted_amount",
+                      "expression": "`weighted_amount`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "stage",
+                    "displayName": "Stage"
+                  },
+                  {
+                    "fieldName": "ask_amount",
+                    "displayName": "Ask ($)"
+                  },
+                  {
+                    "fieldName": "weighted_amount",
+                    "displayName": "Weighted ($)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Biggest in-play opportunities"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 20,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    }
+  }
+}

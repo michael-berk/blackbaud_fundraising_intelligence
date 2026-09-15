@@ -48,3 +48,19 @@ databricks bundle run build_gold_views_serverless -p fe-vm-blackbaud-demo-bbcon
 
 Override a variable at deploy time with `--var`, e.g.
 `--var gold_schema=blackbaud_intel`.
+
+## Dashboard
+
+`dashboards/campaign_executive_dashboard.lvdash.json` is the exported Lakeview
+dashboard definition (two pages: *Campaign Executive View* and *Actionable
+Insights*). It reads the gold views built by the job. To recreate it in a
+workspace:
+
+```sh
+databricks api post /api/2.0/lakeview/dashboards -p <profile> --json '{
+  "display_name": "Blackbaud Campaign Executive Dashboard",
+  "warehouse_id": "<warehouse_id>",
+  "parent_path": "/Users/<you>",
+  "serialized_dashboard": "<contents of the .lvdash.json, as a JSON string>"
+}'
+```
