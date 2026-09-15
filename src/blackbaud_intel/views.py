@@ -151,3 +151,29 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         ORDER BY goal_amount DESC NULLS LAST
         """,
     ]
+
+
+def build_scenario_statement(
+    gold_catalog: str, gold_schema: str, response_pending_uplift: float
+) -> str:
+    """Return the executive what-if scenario query (Output 5).
+
+    Recomputes the weighted forecast after raising the win probability of
+    ``Response pending`` opportunities by ``response_pending_uplift`` (capped at 1.0),
+    holding all other stages fixed. Returned as a query, not a view, because the
+    uplift is a caller-supplied parameter rather than stored state.
+
+    Args:
+        gold_catalog: Catalog holding the gold views.
+        gold_schema: Schema holding the gold views.
+        response_pending_uplift: Absolute uplift to win probability (e.g. 0.10 = +10pts).
+    """
+    gold = f"{gold_catalog}.{gold_schema}"
+    return f"""
+    SELECT
+      ROUND(SUM(weighted_amount), 0)                                       AS base_forecast,
+      ROUND(SUM(CASE WHEN stage = 'Response pending'
+                     THEN ask_amount * LEAST(win_probability + {response_pending_uplift}, 1.0)
+                     ELSE weighted_amount END), 0)                         AS scenario_forecast
+    FROM {gold}.opp_enriched
+    """

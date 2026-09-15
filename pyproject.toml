@@ -9,6 +9,15 @@ description = "Pipeline forecast and gift-concentration risk over Blackbaud CRM 
 readme = "README.md"
 requires-python = ">=3.10"
 
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "databricks-sdk>=0.30",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
