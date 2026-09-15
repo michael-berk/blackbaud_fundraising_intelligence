@@ -1,8 +1,13 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # Build Blackbaud fundraising-intelligence gold views
-# MAGIC Blackbaud CRM (System of Record) → Databricks (System of Intelligence). Reads the
-# MAGIC federated Blackbaud SQL Server and creates the pipeline-forecast and risk views.
+# MAGIC Blackbaud CRM (System of Record) → Databricks (System of Intelligence).
+# MAGIC
+# MAGIC Reads the federated Blackbaud SQL Server and builds the analytics views:
+# MAGIC the enriched opportunity grain, pipeline forecast & risk, and campaign /
+# MAGIC designation attainment. The SQL lives in `blackbaud_intel.views`; this
+# MAGIC notebook just runs it and previews the key results. See the project README
+# MAGIC for the full view catalog.
 
 # COMMAND ----------
 
