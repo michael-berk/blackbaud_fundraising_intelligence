@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "blackbaud_fundraising_intelligence"
+version = "0.1.0"
+description = "Pipeline forecast and gift-concentration risk over Blackbaud CRM via Lakehouse Federation."
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+force-exclude = true
+extend-include = ["*.ipynb"]
+builtins = ["dbutils", "spark", "display"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 88
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

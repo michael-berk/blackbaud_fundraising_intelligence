@@ -1,0 +1,34 @@
+bundle:
+  name: blackbaud_fundraising_intelligence
+
+artifacts:
+  default:
+    type: whl
+    build: uv run hatch build
+    path: .
+
+include:
+  - resources/**/*.yml
+
+variables:
+  whl_version:
+    default: "0.1.0"
+  whl_path:
+    default: "${workspace.root_path}/artifacts/.internal/${bundle.name}-${var.whl_version}-py3-none-any.whl"
+  source_catalog:
+    default: "blackbaud_nxt_test"
+  gold_catalog:
+    default: "blackbaud_demo_bbcon"
+  gold_schema:
+    default: "default"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    # SETUP TODO: for automated deploys, set a service principal here. This project
+    # deploys as the interactive user (michael.berk@databricks.com) because FEVM
+    # Azure workspaces do not support PAT/SP deploys for the FE team.
+    workspace:
+      host: https://adb-7405614847929963.3.azuredatabricks.net
+      root_path: ~/bundles/${bundle.name}

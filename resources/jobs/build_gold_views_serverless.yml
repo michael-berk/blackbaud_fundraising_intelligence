@@ -1,0 +1,21 @@
+resources:
+  jobs:
+    build_gold_views_serverless:
+      name: Blackbaud Build Gold Views (Serverless)
+      environments:
+      - environment_key: default
+        spec:
+          client: "1"
+          dependencies:
+          - ${var.whl_path}
+      tasks:
+      - task_key: build_gold_views
+        notebook_task:
+          notebook_path: ../../notebooks/build_gold_views.py
+          base_parameters:
+            source_catalog: ${var.source_catalog}
+            gold_catalog: ${var.gold_catalog}
+            gold_schema: ${var.gold_schema}
+        environment_key: default
+      queue:
+        enabled: true

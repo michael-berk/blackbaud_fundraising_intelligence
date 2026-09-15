@@ -1,0 +1,14 @@
+# Databricks Asset Bundles
+.databricks/
+
+# Python build artifacts
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+
+# Environments and tooling caches
+.venv/
+.ruff_cache/
+.pytest_cache/
