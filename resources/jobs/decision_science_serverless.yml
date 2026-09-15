@@ -1,0 +1,20 @@
+resources:
+  jobs:
+    decision_science_serverless:
+      name: Blackbaud Decision Science (Serverless)
+      environments:
+      - environment_key: default
+        spec:
+          client: "1"
+          dependencies:
+          - ${var.whl_path}
+      tasks:
+      - task_key: decision_science
+        notebook_task:
+          notebook_path: ../../notebooks/decision_science.py
+          base_parameters:
+            gold_catalog: ${var.gold_catalog}
+            gold_schema: ${var.gold_schema}
+        environment_key: default
+      queue:
+        enabled: true

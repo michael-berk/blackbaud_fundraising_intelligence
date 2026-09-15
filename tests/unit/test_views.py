@@ -21,6 +21,7 @@ EXPECTED_VIEWS = [
     "campaign_goals",
     "exec_summary",
     "scenario_forecast",
+    "prospect_next_best_ask",
 ]
 
 

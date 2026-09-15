@@ -205,6 +205,39 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         FROM b
         ORDER BY sort_order
         """,
+        f"""
+        CREATE OR REPLACE VIEW {gold}.prospect_next_best_ask AS
+        WITH rfm AS (
+          SELECT
+            CONSTITUENTID,
+            GREATEST(DATEDIFF(CURRENT_DATE, MAX(DATE(DATE))), 0) AS recency_days,
+            COUNT(*)                                            AS frequency,
+            SUM(AMOUNT)                                         AS monetary,
+            MAX(AMOUNT)                                         AS largest_gift
+          FROM {src}.dbo.REVENUE
+          GROUP BY CONSTITUENTID
+        ),
+        scored AS (
+          -- RFM quintiles (1-5). Recent + frequent + high-value scores highest.
+          SELECT *,
+            NTILE(5) OVER (ORDER BY recency_days DESC) AS r_score,
+            NTILE(5) OVER (ORDER BY frequency)         AS f_score,
+            NTILE(5) OVER (ORDER BY monetary)          AS m_score
+          FROM rfm
+        )
+        SELECT
+          COALESCE(NULLIF(c.DISPLAYNAME, ''), c.NAME, 'Constituent ' || s.CONSTITUENTID) AS prospect_name,
+          s.recency_days,
+          s.frequency,
+          ROUND(s.monetary, 0)                          AS lifetime_giving,
+          ROUND(s.largest_gift, 0)                      AS largest_gift,
+          s.r_score + s.f_score + s.m_score            AS rfm_score,
+          -- Next-best-ask: step up from the largest prior gift, scaled by RFM strength.
+          ROUND(s.largest_gift * (1 + (s.r_score + s.f_score + s.m_score) / 30.0), 0) AS suggested_ask
+        FROM scored s
+        JOIN {src}.dbo.CONSTITUENT c ON s.CONSTITUENTID = c.ID
+        ORDER BY rfm_score DESC, lifetime_giving DESC
+        """,
     ]
 
 
