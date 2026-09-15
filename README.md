@@ -20,10 +20,13 @@ Blackbaud SQL Server (`source_catalog`):
 | `pipeline_by_stage` | Pipeline totals by opportunity stage |
 | `pipeline_risk` | Gift concentration (top-10 share of open pipeline) + data-quality gaps |
 | `fundraiser_portfolio` | Per-fundraiser pipeline and weighted forecast |
+| `designation_attainment` | Goal vs. raised vs. gap and % to goal, by designation |
+| `campaign_goals` | Campaign goal amounts with start/end dates |
 
-Scope note: campaign goal-attainment and designation performance are intentionally
-omitted — the `CAMPAIGN`, `REVENUE` and `OPPORTUNITY*` link tables are empty in the
-source test database.
+Scope note: pipeline-to-designation attribution is omitted — the
+`OPPORTUNITYDESIGNATION` link table is empty in the source test database, so open
+pipeline cannot be split by designation. Realized revenue (`REVENUESPLIT`) is
+attributed by designation, which powers `designation_attainment`.
 
 ## Prerequisites
 

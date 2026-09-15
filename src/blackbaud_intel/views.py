@@ -114,4 +114,40 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         GROUP BY fundraiser_name
         ORDER BY weighted_forecast DESC
         """,
+        f"""
+        CREATE OR REPLACE VIEW {gold}.designation_attainment AS
+        WITH goal AS (
+          SELECT DESIGNATIONID, SUM(GOAL) AS goal_amount
+          FROM {src}.dbo.DESIGNATIONGOAL
+          GROUP BY DESIGNATIONID
+        ),
+        raised AS (
+          SELECT DESIGNATIONID, SUM(AMOUNT) AS raised_amount
+          FROM {src}.dbo.REVENUESPLIT
+          GROUP BY DESIGNATIONID
+        )
+        SELECT
+          d.NAME                                                   AS designation_name,
+          ROUND(g.goal_amount, 0)                                  AS goal_amount,
+          ROUND(COALESCE(r.raised_amount, 0), 0)                   AS raised_amount,
+          ROUND(g.goal_amount - COALESCE(r.raised_amount, 0), 0)   AS gap_amount,
+          ROUND(COALESCE(r.raised_amount, 0) / g.goal_amount * 100, 1) AS pct_to_goal
+        FROM {src}.dbo.DESIGNATION d
+        JOIN goal g ON d.ID = g.DESIGNATIONID
+        LEFT JOIN raised r ON d.ID = r.DESIGNATIONID
+        WHERE g.goal_amount > 0
+        ORDER BY raised_amount DESC
+        """,
+        f"""
+        CREATE OR REPLACE VIEW {gold}.campaign_goals AS
+        SELECT
+          c.NAME                    AS campaign_name,
+          c.STARTDATE               AS start_date,
+          c.ENDDATE                 AS end_date,
+          ROUND(SUM(hg.AMOUNT), 0)  AS goal_amount
+        FROM {src}.dbo.CAMPAIGN c
+        LEFT JOIN {src}.dbo.CAMPAIGNHIERARCHYGOAL hg ON c.ID = hg.CAMPAIGNID
+        GROUP BY c.NAME, c.STARTDATE, c.ENDDATE
+        ORDER BY goal_amount DESC NULLS LAST
+        """,
     ]

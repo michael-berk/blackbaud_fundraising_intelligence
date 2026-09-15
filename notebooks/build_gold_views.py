@@ -28,3 +28,11 @@ display(spark.table(f"{gold_catalog}.{gold_schema}.pipeline_forecast"))
 # COMMAND ----------
 
 display(spark.table(f"{gold_catalog}.{gold_schema}.pipeline_risk"))
+
+# COMMAND ----------
+
+display(spark.table(f"{gold_catalog}.{gold_schema}.designation_attainment"))
+
+# COMMAND ----------
+
+display(spark.table(f"{gold_catalog}.{gold_schema}.campaign_goals"))
