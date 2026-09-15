@@ -12,7 +12,6 @@ requires-python = ">=3.10"
 [dependency-groups]
 dev = [
   "pytest>=8.0",
-  "databricks-sdk>=0.30",
   "numpy>=1.26",
 ]
 

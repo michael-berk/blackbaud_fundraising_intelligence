@@ -25,10 +25,6 @@ STAGE_WEIGHTS = {
 OPEN_OPP = "win_probability BETWEEN 0.01 AND 0.99"
 
 
-def _gold_namespace(gold_catalog: str, gold_schema: str) -> str:
-    return f"{gold_catalog}.{gold_schema}"
-
-
 def _stage_weight_values() -> str:
     return ",\n  ".join(f"('{stage}', {weight})" for stage, weight in STAGE_WEIGHTS.items())
 
@@ -270,7 +266,7 @@ def build_view_statements(source_catalog: str, gold_catalog: str, gold_schema: s
         gold_schema: Schema within ``gold_catalog`` for the views.
     """
     src = source_catalog
-    gold = _gold_namespace(gold_catalog, gold_schema)
+    gold = f"{gold_catalog}.{gold_schema}"
     return [
         *_base_views(src, gold),
         *_pipeline_views(gold),
@@ -294,7 +290,7 @@ def build_scenario_statement(
         gold_schema: Schema holding the gold views.
         response_pending_uplift: Absolute uplift to win probability (e.g. 0.10 = +10pts).
     """
-    gold = _gold_namespace(gold_catalog, gold_schema)
+    gold = f"{gold_catalog}.{gold_schema}"
     return f"""
     SELECT
       ROUND(SUM(weighted_amount), 0)                                       AS base_forecast,
