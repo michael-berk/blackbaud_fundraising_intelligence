@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/assets/header.png" alt="Databricks for Good + Blackbaud" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/header-dark.png">
+    <img src="docs/assets/header.png" alt="Databricks for Good + Blackbaud" width="640">
+  </picture>
 </p>
 
 # Blackbaud Fundraising Intelligence
