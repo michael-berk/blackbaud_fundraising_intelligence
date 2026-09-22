@@ -21,14 +21,57 @@ variables:
     default: "blackbaud_demo_bbcon"
   gold_schema:
     default: "default"
+  prod_sp_name:
+    description: >-
+      Application ID of the service principal that runs prod jobs and owns the
+      prod deploy. Pinning run_as to an SP means scheduled refreshes don't depend
+      on any individual user's session or federation binding.
+    # SETUP TODO: replace with the real prod service principal application ID.
+    default: "00000000-0000-0000-0000-000000000000"
 
 targets:
   dev:
     mode: development
     default: true
-    # SETUP TODO: for automated deploys, set a service principal here. This project
-    # deploys as the interactive user (michael.berk@databricks.com) because FEVM
-    # Azure workspaces do not support PAT/SP deploys for the FE team.
+    # Dev deploys run as the interactive user. FEVM Azure workspaces don't support
+    # PAT/SP deploys for the FE team, so dev stays user-run; prod should use the SP below.
     workspace:
       host: https://adb-7405614847929963.3.azuredatabricks.net
       root_path: ~/bundles/${bundle.name}
+
+  # SETUP TODO (stub): prod target for a service-principal deploy, modeled on fde-one.
+  # This should be deployed and run AS a service principal, not an interactive user, so
+  # scheduled refreshes are stable and not tied to anyone's session/OAuth binding.
+  # To activate: set prod_sp_name to the real SP app ID, grant it the required Unity
+  # Catalog access (USE on source_catalog, CREATE on gold_catalog), and deploy with
+  # `databricks bundle deploy -t prod` under that SP's credentials.
+  #
+  # prod:
+  #   mode: production
+  #   workspace:
+  #     host: https://adb-7405614847929963.3.azuredatabricks.net
+  #     root_path: /Workspace/Shared/${bundle.name}/.bundle/${bundle.target}
+  #   run_as:
+  #     service_principal_name: ${var.prod_sp_name}
+  #   resources:
+  #     jobs:
+  #       build_gold_views_serverless:
+  #         run_as:
+  #           service_principal_name: ${var.prod_sp_name}
+  #         schedule:
+  #           quartz_cron_expression: "0 0 5 * * ?"   # daily 5am
+  #           timezone_id: "America/New_York"
+  #           pause_status: UNPAUSED
+  #         permissions:
+  #           - service_principal_name: ${var.prod_sp_name}
+  #             level: CAN_MANAGE
+  #       decision_science_serverless:
+  #         run_as:
+  #           service_principal_name: ${var.prod_sp_name}
+  #         schedule:
+  #           quartz_cron_expression: "0 30 5 * * ?"  # daily 5:30am, after the views build
+  #           timezone_id: "America/New_York"
+  #           pause_status: UNPAUSED
+  #         permissions:
+  #           - service_principal_name: ${var.prod_sp_name}
+  #             level: CAN_MANAGE
