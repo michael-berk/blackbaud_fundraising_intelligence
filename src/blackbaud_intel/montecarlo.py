@@ -1,14 +1,12 @@
-"""Monte Carlo campaign-forecast simulation (decision-science method #4).
+"""Monte Carlo campaign-forecast simulation.
 
-The descriptive forecast is a point estimate: sum of ask_amount * win_probability.
-That hides risk. Here each open opportunity is modelled as a Bernoulli trial that
-either lands its full ask (prob = win_probability) or nothing. Simulating the whole
-open pipeline many times yields a *distribution* of campaign totals, so leadership
-can see the P10 / P50 / P90 range and the probability of clearing goal — not a
-single misleading number.
+Models each open opportunity as a Bernoulli trial (wins its full ask with
+probability = win_probability, else nothing) and simulates the whole open pipeline
+many times. The result is a distribution of campaign totals (P10/P50/P90 and
+probability of goal) rather than a single point estimate.
 
-Pure-Python core (``simulate``) so it is unit-testable without Spark; the notebook
-wrapper pulls opportunities from ``opp_enriched`` and persists the percentiles.
+The core ``simulate`` is pure Python so it unit-tests without Spark; the
+decision_science notebook feeds it rows from opp_enriched and persists the result.
 """
 
 from __future__ import annotations

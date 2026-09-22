@@ -8,6 +8,7 @@
 # COMMAND ----------
 
 from blackbaud_intel.montecarlo import simulate
+from blackbaud_intel.views import OPEN_OPP
 
 # COMMAND ----------
 
@@ -39,7 +40,7 @@ display(spark.sql(f"SELECT * FROM {gold}.prospect_next_best_ask LIMIT 50"))
 open_opps = spark.sql(f"""
     SELECT ask_amount, win_probability
     FROM {gold}.opp_enriched
-    WHERE win_probability > 0 AND win_probability < 1
+    WHERE {OPEN_OPP}
 """).toPandas()
 
 summary = spark.sql(f"SELECT raised, goal FROM {gold}.exec_summary").toPandas().iloc[0]
