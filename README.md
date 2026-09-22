@@ -49,7 +49,7 @@ Go to `{yourworkspaceurl}/one` and try one of the following:
 1. What data do you have access to?
 2. Can you read my Gmail or Docs? Walk me through connecting to them.
 3. How should I leverage Genie Code to build a dashboard off the data in this repo that focuses on donor health?
-4. Riverside University Foundation is running a $343.8M campaign with $633.2M raised and $164M in open pipeline. Leadership worries the forecast leans too heavily on a few major gifts and that some priorities are lagging. Using our Blackbaud data, generate a strategic recommendations report for campaign leadership — cite the specific designation/fundraiser/opportunity behind each recommendation, and rank by expected dollar impact.
+4. Riverside University Foundation is running a $343.8M campaign with $633.2M raised and $164M in open pipeline. Leadership worries the forecast leans too heavily on a few major gifts and that some priorities are lagging. Using our Blackbaud data, generate a strategic recommendations report for campaign leadership — cite the specific designation/fundraiser/opportunity behind each recommendation, and rank by expected dollar impact. ([example output](docs/examples/prompt_4_result.pdf))
 5. Which fundraising priorities are furthest behind their goal, and how much open pipeline is available to close the gap?
 6. Who are our top 20 prospects to solicit next, and what should we ask each of them for?
 7. How concentrated is our pipeline in the largest gifts, and what happens to the forecast if the top few slip?
