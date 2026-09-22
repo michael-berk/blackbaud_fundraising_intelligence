@@ -42,6 +42,11 @@ display(spark.table(f"{gold_catalog}.{gold_schema}.designation_attainment"))
 
 # COMMAND ----------
 
+# Output 2: designation performance — goal vs. raised vs. pipeline (needs OPPORTUNITYDESIGNATION)
+display(spark.table(f"{gold_catalog}.{gold_schema}.designation_performance"))
+
+# COMMAND ----------
+
 display(spark.table(f"{gold_catalog}.{gold_schema}.campaign_goals"))
 
 # COMMAND ----------

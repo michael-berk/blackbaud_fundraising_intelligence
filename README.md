@@ -61,6 +61,7 @@ federated Blackbaud database. Each layer builds on the one above it.
 | `pipeline_risk` | Gift concentration (top-10 share of open pipeline) + missing close dates |
 | `fundraiser_portfolio` | Pipeline and weighted forecast per fundraiser |
 | `designation_attainment` | Goal vs. raised vs. gap and % to goal, by designation |
+| `designation_performance` | Goal, raised, open + weighted **pipeline**, and gap to goal, by designation (Output 2) |
 | `campaign_goals` | Campaign goal amounts with start/end dates |
 | `exec_summary` | One-row rollup: goal, raised, forecast, gap, probability of goal |
 | `scenario_forecast` | Forecast under five fixed what-if scenarios |
