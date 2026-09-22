@@ -55,6 +55,13 @@
       "queryLines": [
         "SELECT stage, ROUND(ask_amount,0) AS ask_amount, ROUND(weighted_amount,0) AS weighted_amount FROM blackbaud_demo_bbcon.default.opp_enriched WHERE win_probability>0 AND win_probability<1 ORDER BY ask_amount DESC LIMIT 15"
       ]
+    },
+    {
+      "name": "desig_perf_ds",
+      "displayName": "Designation performance",
+      "queryLines": [
+        "SELECT designation_name, goal_amount, raised_amount, open_pipeline, weighted_pipeline, forecasted_total, gap_to_goal FROM blackbaud_demo_bbcon.default.designation_performance ORDER BY weighted_pipeline DESC LIMIT 15"
+      ]
     }
   ],
   "pages": [
@@ -568,6 +575,112 @@
             "y": 16,
             "width": 6,
             "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "sec-desig-perf",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### Designation Performance \u2014 Goal vs. Raised vs. Pipeline (Output 2)"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "desig-perf-table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "desig_perf_ds",
+                  "fields": [
+                    {
+                      "name": "designation_name",
+                      "expression": "`designation_name`"
+                    },
+                    {
+                      "name": "goal_amount",
+                      "expression": "`goal_amount`"
+                    },
+                    {
+                      "name": "raised_amount",
+                      "expression": "`raised_amount`"
+                    },
+                    {
+                      "name": "open_pipeline",
+                      "expression": "`open_pipeline`"
+                    },
+                    {
+                      "name": "weighted_pipeline",
+                      "expression": "`weighted_pipeline`"
+                    },
+                    {
+                      "name": "forecasted_total",
+                      "expression": "`forecasted_total`"
+                    },
+                    {
+                      "name": "gap_to_goal",
+                      "expression": "`gap_to_goal`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "designation_name",
+                    "displayName": "Designation"
+                  },
+                  {
+                    "fieldName": "goal_amount",
+                    "displayName": "Goal ($)"
+                  },
+                  {
+                    "fieldName": "raised_amount",
+                    "displayName": "Raised ($)"
+                  },
+                  {
+                    "fieldName": "open_pipeline",
+                    "displayName": "Open Pipeline ($)"
+                  },
+                  {
+                    "fieldName": "weighted_pipeline",
+                    "displayName": "Weighted Pipeline ($)"
+                  },
+                  {
+                    "fieldName": "forecasted_total",
+                    "displayName": "Forecast Total ($)"
+                  },
+                  {
+                    "fieldName": "gap_to_goal",
+                    "displayName": "Gap to Goal ($)"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Designation performance (top 15 by weighted pipeline)"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 6,
+            "height": 7
           }
         }
       ],
