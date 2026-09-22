@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="docs/assets/databricks-for-good-logo.png" alt="Databricks for Good" height="56">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/assets/blackbaud-logo.png" alt="Blackbaud" height="56">
+</p>
+
 # Blackbaud Fundraising Intelligence
 
 ## Background
