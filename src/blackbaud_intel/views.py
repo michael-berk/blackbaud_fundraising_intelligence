@@ -160,6 +160,48 @@ def _attainment_views(src: str, gold: str) -> list[str]:
         GROUP BY c.NAME, c.STARTDATE, c.ENDDATE
         ORDER BY goal_amount DESC NULLS LAST
         """,
+        f"""
+        CREATE OR REPLACE VIEW {gold}.designation_performance AS
+        WITH pipeline AS (
+          -- Opportunities attributed to a designation (OPPORTUNITYDESIGNATION.AMOUNT),
+          -- weighted by stage win probability. Only populated once the link table has data.
+          SELECT
+            od.DESIGNATIONID,
+            SUM(CASE WHEN {OPEN_OPP} THEN od.AMOUNT END) AS open_pipeline,
+            SUM(od.AMOUNT * w.win_probability)           AS weighted_pipeline
+          FROM {src}.dbo.OPPORTUNITYDESIGNATION od
+          JOIN {src}.dbo.OPPORTUNITY o ON od.OPPORTUNITYID = o.ID
+          LEFT JOIN {gold}.stage_weight w ON o.STATUS = w.status
+          GROUP BY od.DESIGNATIONID
+        ),
+        goal AS (
+          SELECT DESIGNATIONID, MAX(GOAL) AS goal_amount
+          FROM {src}.dbo.DESIGNATIONGOAL
+          GROUP BY DESIGNATIONID
+        ),
+        raised AS (
+          SELECT DESIGNATIONID, SUM(AMOUNT) AS raised_amount
+          FROM {src}.dbo.REVENUESPLIT
+          GROUP BY DESIGNATIONID
+        )
+        SELECT
+          d.NAME                                                        AS designation_name,
+          ROUND(g.goal_amount, 0)                                       AS goal_amount,
+          ROUND(COALESCE(r.raised_amount, 0), 0)                        AS raised_amount,
+          ROUND(COALESCE(p.open_pipeline, 0), 0)                        AS open_pipeline,
+          ROUND(COALESCE(p.weighted_pipeline, 0), 0)                    AS weighted_pipeline,
+          ROUND(COALESCE(r.raised_amount, 0) + COALESCE(p.weighted_pipeline, 0), 0)
+                                                                        AS forecasted_total,
+          ROUND(COALESCE(r.raised_amount, 0) + COALESCE(p.weighted_pipeline, 0)
+                - g.goal_amount, 0)                                     AS gap_to_goal
+        FROM {src}.dbo.DESIGNATION d
+        JOIN goal g ON d.ID = g.DESIGNATIONID
+        LEFT JOIN pipeline p ON d.ID = p.DESIGNATIONID
+        LEFT JOIN raised r ON d.ID = r.DESIGNATIONID
+        WHERE g.goal_amount > 0
+          AND (p.weighted_pipeline > 0 OR r.raised_amount > 0)
+        ORDER BY weighted_pipeline DESC
+        """,
     ]
 
 

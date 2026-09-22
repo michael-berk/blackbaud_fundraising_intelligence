@@ -61,6 +61,7 @@ federated Blackbaud database. Each layer builds on the one above it.
 | `pipeline_risk` | Gift concentration (top-10 share of open pipeline) + missing close dates |
 | `fundraiser_portfolio` | Pipeline and weighted forecast per fundraiser |
 | `designation_attainment` | Goal vs. raised vs. gap and % to goal, by designation |
+| `designation_performance` | Goal, raised, open + weighted **pipeline**, and gap to goal, by designation (Output 2) |
 | `campaign_goals` | Campaign goal amounts with start/end dates |
 | `exec_summary` | One-row rollup: goal, raised, forecast, gap, probability of goal |
 | `scenario_forecast` | Forecast under five fixed what-if scenarios |
@@ -111,13 +112,12 @@ Structure follows the reusable-IP `projects/dabs/repo_template`: SQL and logic
 live in importable modules under `src/`, notebooks stay thin, and everything ships
 in a wheel. Run `uv run --group dev pytest` for the unit tests (no cluster needed).
 
-## Scope notes (honest limits of the sample data)
+## Scope notes
 
 - **Win probabilities are a fixed lookup, not a learned model.** `stage_weight`
   assigns each stage a conversion odds; the forecast is arithmetic on top. A real
   engagement would learn these rates from the customer's own history.
-- **Pipeline can't be split by designation** — the `OPPORTUNITYDESIGNATION` link
-  table is empty in the sample DB, so `designation_attainment` uses *realized*
-  revenue (`REVENUESPLIT`), not open pipeline.
-- The numbers reflect an early-campaign sample dataset, so attainment and
-  probability-of-goal read low. The methods, not the figures, are the point.
+- `designation_attainment` measures *realized* revenue (`REVENUESPLIT`) vs. goal;
+  `designation_performance` adds open + weighted **pipeline** attributed via
+  `OPPORTUNITYDESIGNATION`. The latter is only meaningful once that link table is
+  populated in the source.
