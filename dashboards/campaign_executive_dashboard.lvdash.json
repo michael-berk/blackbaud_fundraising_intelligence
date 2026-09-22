@@ -4,7 +4,11 @@
       "name": "exec_ds",
       "displayName": "Executive summary",
       "queryLines": [
-        "SELECT * FROM blackbaud_demo_bbcon.default.exec_summary"
+        "SELECT\n",
+        "  *,\n",
+        "  CAST(raised AS DOUBLE) / NULLIF(CAST(goal AS DOUBLE), 0) AS pct_raised_to_goal\n",
+        "FROM\n",
+        "  blackbaud_demo_bbcon.default.exec_summary"
       ]
     },
     {
@@ -22,24 +26,10 @@
       ]
     },
     {
-      "name": "designation_ds",
-      "displayName": "Designation attainment",
-      "queryLines": [
-        "SELECT designation_name, goal_amount, raised_amount, pct_to_goal FROM blackbaud_demo_bbcon.default.designation_attainment ORDER BY raised_amount DESC LIMIT 15"
-      ]
-    },
-    {
       "name": "mc_ds",
       "displayName": "Monte Carlo forecast",
       "queryLines": [
         "SELECT committed, p10, p50, p90, mean, probability_of_goal FROM blackbaud_demo_bbcon.default.montecarlo_forecast"
-      ]
-    },
-    {
-      "name": "mc_band_ds",
-      "displayName": "Forecast band",
-      "queryLines": [
-        "SELECT 'P10 (pessimistic)' AS scenario, 1 AS sort_order, p10 AS forecast FROM blackbaud_demo_bbcon.default.montecarlo_forecast UNION ALL SELECT 'P50 (expected)', 2, p50 FROM blackbaud_demo_bbcon.default.montecarlo_forecast UNION ALL SELECT 'P90 (optimistic)', 3, p90 FROM blackbaud_demo_bbcon.default.montecarlo_forecast ORDER BY sort_order"
       ]
     },
     {
@@ -81,7 +71,7 @@
           "position": {
             "x": 0,
             "y": 0,
-            "width": 6,
+            "width": 12,
             "height": 1
           }
         },
@@ -97,7 +87,7 @@
           "position": {
             "x": 0,
             "y": 1,
-            "width": 6,
+            "width": 12,
             "height": 1
           }
         },
@@ -111,8 +101,16 @@
                   "datasetName": "exec_ds",
                   "fields": [
                     {
-                      "name": "goal",
+                      "name": "raisedVal",
+                      "expression": "`raised`"
+                    },
+                    {
+                      "name": "goalVal",
                       "expression": "`goal`"
+                    },
+                    {
+                      "name": "pctVal",
+                      "expression": "`pct_raised_to_goal`"
                     }
                   ],
                   "disaggregated": true
@@ -122,27 +120,26 @@
             "spec": {
               "frame": {
                 "showTitle": true,
-                "title": {
-                  "value": "Campaign Goal",
-                  "fields": []
-                }
+                "title": "Progress to Goal"
               },
-              "version": 2,
-              "widgetType": "counter",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"view\":{\"stroke\":null}},\"transform\":[{\"calculate\":\"format(datum.pctVal*100,'.0f')+'% to Goal  \\u2014  $'+format(datum.raisedVal/1e6,',.0f')+'M raised of $'+format(datum.goalVal/1e6,',.0f')+'M goal'\",\"as\":\"headline\"}],\"layer\":[{\"mark\":{\"type\":\"bar\",\"height\":16,\"cornerRadius\":8,\"color\":\"#00A972\",\"dy\":10},\"encoding\":{\"x\":{\"field\":\"raisedVal\",\"type\":\"quantitative\",\"axis\":null}}},{\"mark\":{\"type\":\"tick\",\"thickness\":3,\"size\":24,\"dy\":10,\"strokeDash\":[4,2],\"color\":{\"expr\":\"colors.textPrimary.default\"}},\"encoding\":{\"x\":{\"field\":\"goalVal\",\"type\":\"quantitative\"}}},{\"mark\":{\"type\":\"text\",\"fontSize\":14,\"fontWeight\":\"bold\",\"align\":\"left\",\"dy\":-14,\"color\":\"#00A972\"},\"encoding\":{\"x\":{\"value\":0},\"text\":{\"field\":\"headline\",\"type\":\"nominal\"}}}]}"
+              },
+              "version": 1,
+              "widgetType": "custom-vega-viz",
               "encodings": {
-                "value": {
-                  "fieldName": "goal",
-                  "format": {
-                    "type": "number-currency",
-                    "currencyCode": "USD",
-                    "abbreviation": "compact",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
+                "fields": [
+                  {
+                    "fieldName": "raisedVal"
                   },
-                  "displayName": "Campaign Goal"
-                }
+                  {
+                    "fieldName": "goalVal"
+                  },
+                  {
+                    "fieldName": "pctVal"
+                  }
+                ]
               },
               "data": {
                 "queryName": "main_query"
@@ -152,63 +149,8 @@
           "position": {
             "x": 0,
             "y": 2,
-            "width": 2,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "kpi-raised",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "exec_ds",
-                  "fields": [
-                    {
-                      "name": "raised",
-                      "expression": "`raised`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Raised to Date",
-                  "fields": []
-                }
-              },
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": {
-                "value": {
-                  "fieldName": "raised",
-                  "format": {
-                    "type": "number-currency",
-                    "currencyCode": "USD",
-                    "abbreviation": "compact",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  },
-                  "displayName": "Raised to Date"
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 2,
-            "y": 2,
-            "width": 2,
-            "height": 3
+            "width": 12,
+            "height": 2
           }
         },
         {
@@ -260,9 +202,9 @@
             }
           },
           "position": {
-            "x": 4,
-            "y": 2,
-            "width": 2,
+            "x": 0,
+            "y": 4,
+            "width": 4,
             "height": 3
           }
         },
@@ -315,9 +257,9 @@
             }
           },
           "position": {
-            "x": 0,
-            "y": 5,
-            "width": 2,
+            "x": 4,
+            "y": 4,
+            "width": 4,
             "height": 3
           }
         },
@@ -370,62 +312,9 @@
             }
           },
           "position": {
-            "x": 2,
-            "y": 5,
-            "width": 2,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "kpi-prob",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "exec_ds",
-                  "fields": [
-                    {
-                      "name": "probability_of_goal",
-                      "expression": "`probability_of_goal`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Probability of Goal",
-                  "fields": []
-                }
-              },
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": {
-                "value": {
-                  "fieldName": "probability_of_goal",
-                  "format": {
-                    "type": "number-percent",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 0
-                    }
-                  },
-                  "displayName": "Probability of Goal"
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 4,
-            "y": 5,
-            "width": 2,
+            "x": 8,
+            "y": 4,
+            "width": 4,
             "height": 3
           }
         },
@@ -440,8 +329,8 @@
           },
           "position": {
             "x": 0,
-            "y": 8,
-            "width": 6,
+            "y": 7,
+            "width": 12,
             "height": 1
           }
         },
@@ -524,8 +413,8 @@
           },
           "position": {
             "x": 0,
-            "y": 9,
-            "width": 3,
+            "y": 8,
+            "width": 6,
             "height": 6
           }
         },
@@ -607,121 +496,8 @@
             }
           },
           "position": {
-            "x": 3,
-            "y": 9,
-            "width": 3,
-            "height": 6
-          }
-        },
-        {
-          "widget": {
-            "name": "sec-desig",
-            "multilineTextboxSpec": {
-              "lines": [
-                "### Goal vs. Raised by Designation"
-              ]
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 15,
-            "width": 6,
-            "height": 1
-          }
-        },
-        {
-          "widget": {
-            "name": "desig-table",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "designation_ds",
-                  "fields": [
-                    {
-                      "name": "designation_name",
-                      "expression": "`designation_name`"
-                    },
-                    {
-                      "name": "goal_amount",
-                      "expression": "`goal_amount`"
-                    },
-                    {
-                      "name": "raised_amount",
-                      "expression": "`raised_amount`"
-                    },
-                    {
-                      "name": "pct_to_goal",
-                      "expression": "`pct_to_goal`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Designation attainment (top 15 by raised)",
-                  "fields": []
-                }
-              },
-              "version": 2,
-              "widgetType": "table",
-              "encodings": {
-                "columns": [
-                  {
-                    "fieldName": "designation_name",
-                    "displayName": "Designation"
-                  },
-                  {
-                    "fieldName": "goal_amount",
-                    "format": {
-                      "type": "number-currency",
-                      "currencyCode": "USD",
-                      "abbreviation": "compact",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    },
-                    "displayName": "Goal Amount"
-                  },
-                  {
-                    "fieldName": "raised_amount",
-                    "format": {
-                      "type": "number-currency",
-                      "currencyCode": "USD",
-                      "abbreviation": "compact",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    },
-                    "displayName": "Raised Amount"
-                  },
-                  {
-                    "fieldName": "pct_to_goal",
-                    "format": {
-                      "type": "number-percent",
-                      "decimalPlaces": {
-                        "type": "max",
-                        "places": 1
-                      }
-                    },
-                    "displayName": "% to Goal"
-                  }
-                ]
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 16,
+            "x": 6,
+            "y": 8,
             "width": 6,
             "height": 6
           }
@@ -731,14 +507,14 @@
             "name": "sec-desig-perf",
             "multilineTextboxSpec": {
               "lines": [
-                "### Designation Performance \u2014 Goal vs. Raised vs. Pipeline (Output 2)"
+                "### Designation Performance"
               ]
             }
           },
           "position": {
             "x": 0,
-            "y": 22,
-            "width": 6,
+            "y": 14,
+            "width": 12,
             "height": 1
           }
         },
@@ -887,13 +663,14 @@
           },
           "position": {
             "x": 0,
-            "y": 23,
-            "width": 6,
+            "y": 15,
+            "width": 12,
             "height": 7
           }
         }
       ],
-      "pageType": "PAGE_TYPE_CANVAS"
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
     },
     {
       "name": "insights_page",
@@ -911,7 +688,7 @@
           "position": {
             "x": 0,
             "y": 0,
-            "width": 6,
+            "width": 12,
             "height": 1
           }
         },
@@ -927,7 +704,7 @@
           "position": {
             "x": 0,
             "y": 1,
-            "width": 6,
+            "width": 12,
             "height": 1
           }
         },
@@ -936,262 +713,15 @@
             "name": "i-sec-forecast",
             "multilineTextboxSpec": {
               "lines": [
-                "### Forecast confidence (Monte Carlo, 10k simulations)"
+                "### Forecast Confidence Interval (Monte Carlo)"
               ]
             }
           },
           "position": {
             "x": 0,
             "y": 2,
-            "width": 6,
+            "width": 12,
             "height": 1
-          }
-        },
-        {
-          "widget": {
-            "name": "mc-p10",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "mc_ds",
-                  "fields": [
-                    {
-                      "name": "p10",
-                      "expression": "`p10`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Pessimistic (P10)",
-                  "fields": []
-                }
-              },
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": {
-                "value": {
-                  "fieldName": "p10",
-                  "format": {
-                    "type": "number-currency",
-                    "currencyCode": "USD",
-                    "abbreviation": "compact",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  },
-                  "displayName": "Pessimistic (P10)"
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 3,
-            "width": 2,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "mc-p50",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "mc_ds",
-                  "fields": [
-                    {
-                      "name": "p50",
-                      "expression": "`p50`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Expected (P50)",
-                  "fields": []
-                }
-              },
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": {
-                "value": {
-                  "fieldName": "p50",
-                  "format": {
-                    "type": "number-currency",
-                    "currencyCode": "USD",
-                    "abbreviation": "compact",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  },
-                  "displayName": "Expected (P50)"
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 2,
-            "y": 3,
-            "width": 2,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "mc-p90",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "mc_ds",
-                  "fields": [
-                    {
-                      "name": "p90",
-                      "expression": "`p90`"
-                    }
-                  ],
-                  "disaggregated": true
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Optimistic (P90)",
-                  "fields": []
-                }
-              },
-              "version": 2,
-              "widgetType": "counter",
-              "encodings": {
-                "value": {
-                  "fieldName": "p90",
-                  "format": {
-                    "type": "number-currency",
-                    "currencyCode": "USD",
-                    "abbreviation": "compact",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 1
-                    }
-                  },
-                  "displayName": "Optimistic (P90)"
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 4,
-            "y": 3,
-            "width": 2,
-            "height": 3
-          }
-        },
-        {
-          "widget": {
-            "name": "mc-band",
-            "queries": [
-              {
-                "name": "main_query",
-                "query": {
-                  "datasetName": "mc_band_ds",
-                  "fields": [
-                    {
-                      "name": "scenario",
-                      "expression": "`scenario`"
-                    },
-                    {
-                      "name": "sum(forecast)",
-                      "expression": "SUM(`forecast`)"
-                    }
-                  ],
-                  "disaggregated": false
-                }
-              }
-            ],
-            "spec": {
-              "frame": {
-                "showTitle": true,
-                "title": {
-                  "value": "Forecast range",
-                  "fields": []
-                }
-              },
-              "version": 3,
-              "mark": {
-                "colors": [
-                  "#FF3621",
-                  "#FFAB00",
-                  "#00A972"
-                ]
-              },
-              "widgetType": "bar",
-              "encodings": {
-                "x": {
-                  "fieldName": "scenario",
-                  "displayName": "scenario",
-                  "scale": {
-                    "type": "categorical",
-                    "sort": {
-                      "by": "natural-order"
-                    }
-                  }
-                },
-                "y": {
-                  "fieldName": "sum(forecast)",
-                  "format": {
-                    "type": "number-currency",
-                    "currencyCode": "USD",
-                    "abbreviation": "compact",
-                    "decimalPlaces": {
-                      "type": "max",
-                      "places": 0
-                    }
-                  },
-                  "displayName": "forecast",
-                  "scale": {
-                    "type": "quantitative"
-                  }
-                },
-                "label": {
-                  "show": true
-                }
-              },
-              "data": {
-                "queryName": "main_query"
-              }
-            }
-          },
-          "position": {
-            "x": 0,
-            "y": 6,
-            "width": 6,
-            "height": 5
           }
         },
         {
@@ -1205,8 +735,8 @@
           },
           "position": {
             "x": 0,
-            "y": 11,
-            "width": 6,
+            "y": 7,
+            "width": 12,
             "height": 1
           }
         },
@@ -1311,8 +841,8 @@
           },
           "position": {
             "x": 0,
-            "y": 12,
-            "width": 6,
+            "y": 8,
+            "width": 12,
             "height": 7
           }
         },
@@ -1327,8 +857,8 @@
           },
           "position": {
             "x": 0,
-            "y": 19,
-            "width": 6,
+            "y": 15,
+            "width": 12,
             "height": 1
           }
         },
@@ -1409,13 +939,83 @@
           },
           "position": {
             "x": 0,
-            "y": 20,
-            "width": 6,
+            "y": 16,
+            "width": 12,
             "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "forecast_interval",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "mc_ds",
+                  "fields": [
+                    {
+                      "name": "p10Val",
+                      "expression": "`p10`"
+                    },
+                    {
+                      "name": "p50Val",
+                      "expression": "`p50`"
+                    },
+                    {
+                      "name": "p90Val",
+                      "expression": "`p90`"
+                    },
+                    {
+                      "name": "committedVal",
+                      "expression": "`committed`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Forecast Confidence Interval"
+              },
+              "version": 1,
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"view\":{\"stroke\":null}},\"transform\":[{\"calculate\":\"'Committed: $' + format(datum.committedVal/1e6,',.0f') + 'M'\",\"as\":\"lblCommit\"},{\"calculate\":\"'P10: $' + format(datum.p10Val/1e6,',.0f') + 'M'\",\"as\":\"lbl10\"},{\"calculate\":\"'P50: $' + format(datum.p50Val/1e6,',.0f') + 'M'\",\"as\":\"lbl50\"},{\"calculate\":\"'P90: $' + format(datum.p90Val/1e6,',.0f') + 'M'\",\"as\":\"lbl90\"}],\"layer\":[{\"mark\":{\"type\":\"bar\",\"height\":44,\"cornerRadius\":8,\"opacity\":0.12,\"color\":\"#1B8BD1\"},\"encoding\":{\"x\":{\"field\":\"p10Val\",\"type\":\"quantitative\",\"scale\":{\"zero\":false,\"padding\":20},\"axis\":{\"format\":\"$,.3s\",\"title\":null,\"grid\":false}},\"x2\":{\"field\":\"p90Val\"}}},{\"mark\":{\"type\":\"bar\",\"height\":44,\"cornerRadius\":8,\"opacity\":0.3,\"color\":\"#1B8BD1\"},\"encoding\":{\"x\":{\"field\":\"p10Val\",\"type\":\"quantitative\"},\"x2\":{\"field\":\"p50Val\"}}},{\"mark\":{\"type\":\"tick\",\"thickness\":4,\"size\":44,\"color\":\"#1B8BD1\"},\"encoding\":{\"x\":{\"field\":\"p50Val\",\"type\":\"quantitative\"}}},{\"mark\":{\"type\":\"tick\",\"thickness\":3,\"size\":52,\"color\":\"#00A972\",\"strokeDash\":[6,3]},\"encoding\":{\"x\":{\"field\":\"committedVal\",\"type\":\"quantitative\"}}},{\"mark\":{\"type\":\"text\",\"align\":\"center\",\"dy\":-38,\"fontSize\":12,\"fontWeight\":\"bold\",\"color\":\"#00A972\"},\"encoding\":{\"x\":{\"field\":\"committedVal\",\"type\":\"quantitative\"},\"text\":{\"field\":\"lblCommit\",\"type\":\"nominal\"}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"dy\":38,\"fontSize\":12,\"color\":{\"expr\":\"colors.textPrimary.default\"}},\"encoding\":{\"x\":{\"field\":\"p10Val\",\"type\":\"quantitative\"},\"text\":{\"field\":\"lbl10\",\"type\":\"nominal\"}}},{\"mark\":{\"type\":\"text\",\"align\":\"center\",\"dy\":-38,\"fontSize\":13,\"fontWeight\":\"bold\",\"color\":\"#1B8BD1\"},\"encoding\":{\"x\":{\"field\":\"p50Val\",\"type\":\"quantitative\"},\"text\":{\"field\":\"lbl50\",\"type\":\"nominal\"}}},{\"mark\":{\"type\":\"text\",\"align\":\"right\",\"dy\":38,\"fontSize\":12,\"color\":{\"expr\":\"colors.textPrimary.default\"}},\"encoding\":{\"x\":{\"field\":\"p90Val\",\"type\":\"quantitative\"},\"text\":{\"field\":\"lbl90\",\"type\":\"nominal\"}}}]}"
+              },
+              "widgetType": "custom-vega-viz",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "p10Val"
+                  },
+                  {
+                    "fieldName": "p50Val"
+                  },
+                  {
+                    "fieldName": "p90Val"
+                  },
+                  {
+                    "fieldName": "committedVal"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 4
           }
         }
       ],
-      "pageType": "PAGE_TYPE_CANVAS"
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
     }
   ],
   "uiSettings": {
