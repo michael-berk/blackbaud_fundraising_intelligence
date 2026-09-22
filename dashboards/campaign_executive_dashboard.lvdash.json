@@ -120,17 +120,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Campaign Goal",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "goal",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
                   "displayName": "Campaign Goal"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Campaign Goal"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -160,17 +175,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Raised to Date",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "raised",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
                   "displayName": "Raised to Date"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Raised to Date"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -200,17 +230,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Forecasted Total",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "forecasted_total",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
                   "displayName": "Forecasted Total"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Forecasted Total"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -240,17 +285,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Open Pipeline",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "open_pipeline",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
                   "displayName": "Open Pipeline"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Open Pipeline"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -280,17 +340,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Forecast Gap",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "gap",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
                   "displayName": "Forecast Gap"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Forecast Gap"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -320,17 +395,30 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Probability of Goal",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "probability_of_goal",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
                   "displayName": "Probability of Goal"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Probability of Goal"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -380,34 +468,14 @@
               }
             ],
             "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "encodings": {
-                "x": {
-                  "fieldName": "scenario",
-                  "scale": {
-                    "type": "categorical",
-                    "sort": {
-                      "by": "natural-order"
-                    }
-                  },
-                  "displayName": "scenario"
-                },
-                "y": {
-                  "fieldName": "sum(forecast)",
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "displayName": "forecast"
-                },
-                "label": {
-                  "show": true
-                }
-              },
               "frame": {
                 "showTitle": true,
-                "title": "Forecast under each scenario"
+                "title": {
+                  "value": "Forecast under each scenario",
+                  "fields": []
+                }
               },
+              "version": 3,
               "mark": {
                 "colors": [
                   "#FF3621",
@@ -416,6 +484,41 @@
                   "#8BCAE7",
                   "#AB4057"
                 ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "scenario",
+                  "displayName": "scenario",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(forecast)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
+                  "displayName": "forecast",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -449,34 +552,14 @@
               }
             ],
             "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "encodings": {
-                "x": {
-                  "fieldName": "stage",
-                  "scale": {
-                    "type": "categorical",
-                    "sort": {
-                      "by": "y-reversed"
-                    }
-                  },
-                  "displayName": "stage"
-                },
-                "y": {
-                  "fieldName": "sum(weighted)",
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "displayName": "weighted"
-                },
-                "label": {
-                  "show": true
-                }
-              },
               "frame": {
                 "showTitle": true,
-                "title": "Weighted pipeline by stage"
+                "title": {
+                  "value": "Weighted pipeline by stage",
+                  "fields": []
+                }
               },
+              "version": 3,
               "mark": {
                 "colors": [
                   "#FF3621",
@@ -485,6 +568,41 @@
                   "#8BCAE7",
                   "#AB4057"
                 ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "stage",
+                  "displayName": "stage",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(weighted)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
+                  "displayName": "weighted",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -542,6 +660,13 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Designation attainment (top 15 by raised)",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "table",
               "encodings": {
@@ -552,21 +677,45 @@
                   },
                   {
                     "fieldName": "goal_amount",
-                    "displayName": "Goal ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Goal Amount"
                   },
                   {
                     "fieldName": "raised_amount",
-                    "displayName": "Raised ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Raised Amount"
                   },
                   {
                     "fieldName": "pct_to_goal",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
                     "displayName": "% to Goal"
                   }
                 ]
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Designation attainment (top 15 by raised)"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -636,6 +785,13 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Designation performance (top 15 by weighted pipeline)",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "table",
               "encodings": {
@@ -646,33 +802,86 @@
                   },
                   {
                     "fieldName": "goal_amount",
-                    "displayName": "Goal ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Goal Amount"
                   },
                   {
                     "fieldName": "raised_amount",
-                    "displayName": "Raised ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Raised Amount"
                   },
                   {
                     "fieldName": "open_pipeline",
-                    "displayName": "Open Pipeline ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Open Pipeline"
                   },
                   {
                     "fieldName": "weighted_pipeline",
-                    "displayName": "Weighted Pipeline ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Weighted Pipeline"
                   },
                   {
                     "fieldName": "forecasted_total",
-                    "displayName": "Forecast Total ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Forecasted Total"
                   },
                   {
                     "fieldName": "gap_to_goal",
-                    "displayName": "Gap to Goal ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Gap to Goal"
                   }
                 ]
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Designation performance (top 15 by weighted pipeline)"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -757,17 +966,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Pessimistic (P10)",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "p10",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
                   "displayName": "Pessimistic (P10)"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Pessimistic (P10)"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -797,17 +1021,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Expected (P50)",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "p50",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
                   "displayName": "Expected (P50)"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Expected (P50)"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -837,17 +1076,32 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Optimistic (P90)",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "counter",
               "encodings": {
                 "value": {
                   "fieldName": "p90",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
                   "displayName": "Optimistic (P90)"
                 }
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Optimistic (P90)"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -881,40 +1135,55 @@
               }
             ],
             "spec": {
-              "version": 3,
-              "widgetType": "bar",
-              "encodings": {
-                "x": {
-                  "fieldName": "scenario",
-                  "scale": {
-                    "type": "categorical",
-                    "sort": {
-                      "by": "natural-order"
-                    }
-                  },
-                  "displayName": "scenario"
-                },
-                "y": {
-                  "fieldName": "sum(forecast)",
-                  "scale": {
-                    "type": "quantitative"
-                  },
-                  "displayName": "forecast"
-                },
-                "label": {
-                  "show": true
-                }
-              },
               "frame": {
                 "showTitle": true,
-                "title": "Forecast range"
+                "title": {
+                  "value": "Forecast range",
+                  "fields": []
+                }
               },
+              "version": 3,
               "mark": {
                 "colors": [
                   "#FF3621",
                   "#FFAB00",
                   "#00A972"
                 ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "scenario",
+                  "displayName": "scenario",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(forecast)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
+                  "displayName": "forecast",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -980,6 +1249,13 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Top 25 prospects to contact",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "table",
               "encodings": {
@@ -990,7 +1266,16 @@
                   },
                   {
                     "fieldName": "lifetime_giving",
-                    "displayName": "Lifetime Giving ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Lifetime Giving"
                   },
                   {
                     "fieldName": "frequency",
@@ -1006,13 +1291,21 @@
                   },
                   {
                     "fieldName": "suggested_ask",
-                    "displayName": "Suggested Ask ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Suggested Ask"
                   }
                 ]
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Top 25 prospects to contact"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
@@ -1066,6 +1359,13 @@
               }
             ],
             "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Biggest in-play opportunities",
+                  "fields": []
+                }
+              },
               "version": 2,
               "widgetType": "table",
               "encodings": {
@@ -1076,17 +1376,34 @@
                   },
                   {
                     "fieldName": "ask_amount",
-                    "displayName": "Ask ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Ask Amount"
                   },
                   {
                     "fieldName": "weighted_amount",
-                    "displayName": "Weighted ($)"
+                    "format": {
+                      "type": "number-currency",
+                      "currencyCode": "USD",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    },
+                    "displayName": "Weighted Amount"
                   }
                 ]
               },
-              "frame": {
-                "showTitle": true,
-                "title": "Biggest in-play opportunities"
+              "data": {
+                "queryName": "main_query"
               }
             }
           },
